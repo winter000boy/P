@@ -1,0 +1,14 @@
+{
+  "rest": {
+    "RestGenerator": {
+      "name": "guarded agent (firewall on)",
+      "uri": "http://localhost:8000/chat",
+      "method": "post",
+      "headers": {"Content-Type": "application/json"},
+      "req_template_json_object": {"prompt": "$INPUT", "guard": true},
+      "response_json": true,
+      "response_json_field": "response",
+      "request_timeout": 180
+    }
+  }
+}
