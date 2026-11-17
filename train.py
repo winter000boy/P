@@ -1,4 +1,5 @@
 """Fine-tune a small DeBERTa classifier: SAFE (0) vs ATTACK (1, prompt injection or jailbreak)."""
+import torch
 from datasets import concatenate_datasets, load_dataset
 from transformers import (
     AutoModelForSequenceClassification,
@@ -24,7 +25,11 @@ def load_data():
 if __name__ == "__main__":
     tok = AutoTokenizer.from_pretrained(BASE_MODEL)
     model = AutoModelForSequenceClassification.from_pretrained(
-        BASE_MODEL, num_labels=2, id2label={0: "SAFE", 1: "ATTACK"}, label2id={"SAFE": 0, "ATTACK": 1}
+        BASE_MODEL,
+        dtype=torch.float32,  # the checkpoint is stored as fp16; training in fp16 without loss scaling goes NaN
+        num_labels=2,
+        id2label={0: "SAFE", 1: "ATTACK"},
+        label2id={"SAFE": 0, "ATTACK": 1},
     )
     train = load_data()["train"].map(lambda b: tok(b["text"], truncation=True, max_length=256), batched=True)
 
@@ -33,7 +38,7 @@ if __name__ == "__main__":
         num_train_epochs=3,
         per_device_train_batch_size=16,
         learning_rate=3e-5,
-        warmup_ratio=0.1,
+        warmup_steps=0.1,  # float < 1 = ratio of total steps
         save_strategy="no",
         logging_steps=20,
         report_to="none",

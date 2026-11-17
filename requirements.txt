@@ -1,0 +1,8 @@
+torch==2.15.0
+transformers==5.23.0
+datasets==5.2.0
+accelerate==1.16.0
+sentencepiece==0.2.3
+protobuf==7.36.2
+fastapi==0.163.2
+uvicorn==0.54.0

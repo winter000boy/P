@@ -43,9 +43,10 @@ def redact(text: str) -> tuple[str, list[str]]:
 
 
 class Guard:
-    def __init__(self, model_dir: str = MODEL_DIR, threshold: float = THRESHOLD):
+    # CPU by default: one prompt at a time it beat the Apple GPU (p95 42 ms vs 174 ms) because of GPU launch overhead.
+    def __init__(self, model_dir: str = MODEL_DIR, threshold: float = THRESHOLD, device: str = "cpu"):
         # shortcut: only the first 256 tokens are scored; slide a window over long prompts if attacks hide at the end.
-        self.clf = pipeline("text-classification", model=model_dir, truncation=True, max_length=256)
+        self.clf = pipeline("text-classification", model=model_dir, truncation=True, max_length=256, device=device)
         self.threshold = threshold
 
     def attack_score(self, text: str) -> float:

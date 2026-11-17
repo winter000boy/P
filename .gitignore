@@ -1,0 +1,6 @@
+.venv/
+.venv-garak/
+model/
+checkpoints/
+__pycache__/
+.render/

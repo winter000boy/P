@@ -38,10 +38,10 @@ python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# 2. Train the classifier (downloads ~0.5 GB; a few minutes on a laptop)
+# 2. Train the classifier (downloads ~0.5 GB; ~10 minutes on an Apple M-series laptop)
 python train.py
 
-# 3. Measure detection rate, false-positive rate and latency
+# 3. Measure detection rate, false-positive rate and latency (CPU; `python evaluate.py mps` to compare GPU)
 python evaluate.py
 python test_guard.py
 
@@ -95,13 +95,25 @@ the firewall reduces attack success. `--list_probes` shows other probes to try.
 
 ## Results
 
-Fill in from `python evaluate.py` on your machine (held-out test set, never seen in training).
+Measured on an Apple M-series laptop (24 GB). Held-out test set: 378 prompts (199 attacks, 179 benign),
+never seen in training. Re-run `python evaluate.py` to reproduce.
 
 | Metric | Value |
 |---|---|
-| Detection rate (threshold 0.5) | RESULT |
-| False-positive rate (threshold 0.5) | RESULT |
-| Guard latency p50 / p95 | RESULT |
+| Detection rate (threshold 0.5) | **95.5%** (190 / 199 attacks) |
+| False-positive rate (threshold 0.5) | **0.6%** (1 / 179 benign); 0.0% at threshold 0.7 |
+| Accuracy / precision / F1 | 97.4% / 99.5% / 97.4% |
+| Guard latency on CPU, mean / p50 / p95 / max | 26 / 21 / 42 / 52 ms |
+| Guard latency on Apple GPU (MPS), p50 / p95 | 25 / 174 ms (slower for single prompts, so the guard runs on CPU) |
+| LLM answer time (llama3.2:3b) | 1.2–3.5 s |
+| garak `promptinject.HijackHateHumans` attack success, firewall off → on | 18.0% (46/256) → 0% (0/256) |
+| garak `dan.Dan_11_0` attack success, firewall off → on | 100% (1/1) → 0% (0/1) |
+
+In the live demo, the DAN jailbreak made the bare model leak the fake password `TIGER-42`; with the firewall on it
+was blocked in ~44 ms. The 9 missed attacks are short, innocent-looking prompts from `deepset/prompt-injections`
+(e.g. "translate to polish"), several in German.
+
+Seminar PPT, report and a draft research paper built from these numbers are in `docs/`.
 
 ## Limitations
 
